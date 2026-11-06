@@ -1,0 +1,10 @@
+{% extends "core/base.html" %}
+{% block content %}
+<form class="card" style="display:flex;gap:8px"><input name="q" value="{{ q }}" style="flex:1" autofocus><button>Buscar</button></form>
+<div class="card">
+{% if q %}
+  {% for p in results %}<p><a href="{% url 'product_detail' p.sku %}">{{ p.sku }}</a> <span class="muted">{{ p.brand }} {{ p.name }}</span></p>
+  {% empty %}<p class="muted">No hay referencias que coincidan con «{{ q }}».</p>{% endfor %}
+{% else %}<p class="muted">Escribe una referencia.</p>{% endif %}
+</div>
+{% endblock %}

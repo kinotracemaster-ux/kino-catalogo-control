@@ -1,0 +1,15 @@
+{% extends "core/base.html" %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="card">{% csrf_token %}
+  <h3 style="margin-top:0">Subir Excel de inventario</h3>
+  <input type="file" name="excel" accept=".xlsx" required> <button>Importar</button>
+  <p class="muted">Mismo archivo dos veces no genera órdenes. Si hay cambios masivos, queda en revisión hasta que un supervisor lo apruebe.</p>
+</form>
+<div class="card"><div class="wrap"><table>
+<tr><th>Cargado</th><th>Archivo</th><th>Origen</th><th>Filas</th><th>Estado</th><th>Notas</th><th></th></tr>
+{% for s in snapshots %}<tr><td>{{ s.imported_at|date:"d/m/Y H:i" }}</td><td>{{ s.filename }}</td><td>{{ s.source }}</td><td>{{ s.row_count }}</td>
+<td><span class="tag {{ s.status }}">{{ s.get_status_display }}</span></td><td style="white-space:pre-line;font-size:13px">{{ s.error_summary|truncatechars:400 }}</td>
+<td>{% if s.status == "REVIEW" %}<form method="post" action="{% url 'inventory_approve' s.pk %}" onsubmit="return confirm('¿Aprobar y aplicar los cambios de este Excel?')">{% csrf_token %}<button>Aprobar</button></form>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="7" class="muted">Sin importaciones.</td></tr>{% endfor %}
+</table></div></div>
+{% endblock %}

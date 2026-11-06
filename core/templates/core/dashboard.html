@@ -1,0 +1,31 @@
+{% extends "core/base.html" %}
+{% block content %}
+<form action="{% url 'product_search' %}" class="card" style="display:flex;gap:8px">
+  <input name="q" placeholder="Buscar referencia (SKU)" style="flex:1" autofocus><button>Buscar</button>
+</form>
+{% if executor_mode == "assisted" %}<div class="msg info">Modo asistido: las órdenes se hacen a mano en Google Fotos y se confirman en <a href="{% url 'command_list' %}?status=PENDING">Órdenes</a>.</div>{% endif %}
+{% if stale %}<div class="msg warning">El último inventario válido está desactualizado. Revisa la exportación.</div>{% endif %}
+{% if pending_review %}<div class="msg warning">Hay {{ pending_review }} importación(es) en revisión esperando aprobación. <a href="{% url 'inventory_imports' %}">Ver</a></div>{% endif %}
+<div class="card">
+  <h3>Inventario</h3>
+  {% if snap %}
+  <div class="grid">
+    <div class="kpi"><b>{{ counts.total }}</b><span>Referencias</span></div>
+    <div class="kpi"><b>{{ counts.available }}</b><span>Disponibles</span></div>
+    <div class="kpi"><b>{{ counts.sold_out }}</b><span>Agotadas</span></div>
+    <div class="kpi"><b>{{ counts.review }}</b><span>En revisión</span></div>
+    <div class="kpi"><b>{{ blocks }}</b><span>Con bloqueo manual</span></div>
+  </div>
+  <p class="muted">Último Excel válido: {{ snap.filename }} · cargado {{ snap.imported_at|date:"d/m/Y H:i" }} · {{ snap.row_count }} filas</p>
+  {% else %}<p class="muted">Todavía no hay un inventario válido importado.</p>{% endif %}
+</div>
+<div class="card">
+  <h3>Órdenes</h3>
+  <div class="grid">{% for label, n in cmd_counts.items %}<div class="kpi"><b>{{ n }}</b><span>{{ label }}</span></div>{% endfor %}</div>
+</div>
+<div class="card">
+  <h3>Álbumes</h3>
+  {% for a in albums %}<p><a href="{{ a.share_url }}" target="_blank" rel="noopener">{{ a.name }}</a> {% if a.paused %}<span class="tag PENDING">pausado</span>{% endif %}{% if not a.authorized %}<span class="tag">no autorizado</span>{% endif %}</p>
+  {% empty %}<p class="muted">Registra los álbumes en Administración.</p>{% endfor %}
+</div>
+{% endblock %}

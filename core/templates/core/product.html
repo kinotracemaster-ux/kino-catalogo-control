@@ -1,0 +1,34 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="card">
+  <h2 style="margin-top:0">{{ product.sku }} <span class="muted" style="font-weight:400">{{ product.brand }} {{ product.name }}</span></h2>
+  <p>Stock (último Excel válido): <b>{% if state.stock is not None %}{{ state.stock|floatformat:"-2" }}{% else %}SIN DATO{% endif %}</b></p>
+  <p>Bloqueo manual: <b>{% if state.block %}SÍ{% if state.block.reason %} ({{ state.block.reason }}){% endif %} · {{ state.block.created_by }} {{ state.block.created_at|date:"d/m H:i" }}{% else %}NO{% endif %}</b></p>
+  <p>Estado deseado: {% if state.desired %}<span class="tag {{ state.desired }}">{{ state.desired }}</span>{% else %}<span class="tag UNKNOWN">sin recalcular</span>{% endif %} <span class="muted">{{ state.reason }}</span></p>
+  <p>Fotos vinculadas: {{ images|length }} · Álbumes afectados: {{ state.album_images|length }}</p>
+  {% if can_operate %}
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    {% if not state.block %}
+    <form method="post" action="{% url 'product_block' product.sku %}" onsubmit="return confirm('¿Retirar {{ product.sku }} de {{ state.album_images|length }} foto(s) en álbumes?')">{% csrf_token %}
+      <input name="reason" placeholder="Motivo (opcional)"> <button class="btn-red" {% if not state.album_images %}disabled title="Sin fotos mapeadas a álbumes"{% endif %}>Retirar de todos los álbumes</button>
+    </form>
+    {% else %}
+    <form method="post" action="{% url 'product_release' product.sku %}">{% csrf_token %}<button>Liberar bloqueo</button></form>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+<div class="card"><h3>Foto por álbum</h3><div class="wrap"><table>
+<tr><th>Álbum</th><th>Foto</th><th>Deseado</th><th>Observado</th><th>Mapeo</th></tr>
+{% for ai in state.album_images %}<tr><td><a href="{{ ai.album.share_url }}" target="_blank" rel="noopener">{{ ai.album }}</a></td><td>{{ ai.drive_image.filename }}</td>
+<td><span class="tag {{ ai.desired_state }}">{{ ai.get_desired_state_display }}</span></td>
+<td><span class="tag {{ ai.observed_state }}">{{ ai.get_observed_state_display }}</span> <span class="muted">{{ ai.observed_at|date:"d/m H:i" }}</span></td>
+<td>{% if ai.mapping_verified %}verificado{% else %}<span class="muted">por revisar</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="5" class="muted">Este SKU no tiene fotos asignadas a álbumes.</td></tr>{% endfor %}
+</table></div></div>
+<div class="card"><h3>Órdenes recientes</h3><div class="wrap"><table>
+<tr><th>Fecha</th><th>Acción</th><th>Origen</th><th>Álbum</th><th>Estado</th></tr>
+{% for c in commands %}<tr><td>{{ c.created_at|date:"d/m H:i" }}</td><td>{{ c.get_action_display }}</td><td>{{ c.get_source_display }}</td><td>{{ c.album_image.album }}</td><td><span class="tag {{ c.status }}">{{ c.get_status_display }}</span></td></tr>
+{% empty %}<tr><td colspan="5" class="muted">Sin órdenes.</td></tr>{% endfor %}
+</table></div></div>
+{% endblock %}

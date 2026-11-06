@@ -1,0 +1,9 @@
+{% extends "core/base.html" %}
+{% block content %}
+<div class="card"><div class="wrap"><table>
+<tr><th>Álbum</th><th>Cuenta</th><th>Fotos</th><th>Visibles confirmadas</th><th>Órdenes abiertas</th><th>Estado</th></tr>
+{% for a in albums %}<tr><td><a href="{{ a.share_url }}" target="_blank" rel="noopener">{{ a.name }}</a></td><td>{{ a.owner_account }}</td><td>{{ a.n_images }}</td><td>{{ a.n_visible }}</td><td>{{ a.n_pending }}</td>
+<td>{% if not a.authorized %}<span class="tag">no autorizado</span>{% elif a.paused %}<span class="tag PENDING">pausado</span>{% else %}<span class="tag VALID">activo</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="6" class="muted">Sin álbumes. Regístralos en Administración con su enlace original.</td></tr>{% endfor %}
+</table></div></div>
+{% endblock %}

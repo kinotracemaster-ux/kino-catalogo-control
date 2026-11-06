@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Kino Catálogo{% endblock %}</title>
+<style>
+:root{--bg:#f6f6f4;--card:#fff;--ink:#1d1d1b;--muted:#6b6b66;--line:#e2e1dc;--accent:#b5121b;--ok:#1f7a3f;--warn:#a86a00;--bad:#b5121b}
+*{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#111;color:#fff;padding:10px 16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+header a{color:#fff;text-decoration:none;opacity:.85}header a:hover{opacity:1}header strong{letter-spacing:.06em;margin-right:8px}
+header .sp{flex:1}main{max-width:1100px;margin:0 auto;padding:20px 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi b{display:block;font-size:26px}.kpi span{color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600}.wrap{overflow-x:auto}
+.tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:600;background:#eee}
+.VISIBLE,.CONFIRMED,.VALID{background:#e3f3e8;color:var(--ok)}.HIDDEN,.FAILED,.REJECTED{background:#fbe5e6;color:var(--bad)}
+.PENDING,.RUNNING,.REVIEW,.NEEDS_HUMAN,.RETRYABLE_ERROR,.UNKNOWN{background:#fdf1dc;color:var(--warn)}
+button,.btn{background:var(--ink);color:#fff;border:0;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-red{background:var(--accent)}.btn-light{background:#e9e8e3;color:var(--ink)}
+input,select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff}
+.msg{padding:10px 14px;border-radius:8px;margin-bottom:12px}.msg.success{background:#e3f3e8}.msg.warning{background:#fdf1dc}.msg.error{background:#fbe5e6}.msg.info{background:#e7eef8}
+.muted{color:var(--muted)}form.inline{display:inline}
+</style>
+</head>
+<body>
+{% if user.is_authenticated %}
+<header>
+  <strong>KINO CATÁLOGO</strong>
+  <a href="{% url 'dashboard' %}">Inicio</a>
+  <a href="{% url 'product_search' %}">Buscar referencia</a>
+  <a href="{% url 'command_list' %}">Órdenes</a>
+  <a href="{% url 'album_list' %}">Álbumes</a>
+  {% if can_supervise %}<a href="{% url 'inventory_imports' %}">Inventario</a>{% endif %}
+  {% if user.is_staff %}<a href="/admin/">Administración</a>{% endif %}
+  <span class="sp"></span>
+  <span class="muted">{{ user.username }}</span>
+  <form method="post" action="{% url 'logout' %}" class="inline">{% csrf_token %}<button class="btn-light">Salir</button></form>
+</header>
+{% endif %}
+<main>
+{% for m in messages %}<div class="msg {{ m.tags }}">{{ m }}</div>{% endfor %}
+{% block content %}{% endblock %}
+</main>
+</body>
+</html>
