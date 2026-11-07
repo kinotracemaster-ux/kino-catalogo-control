@@ -7,3 +7,5 @@ staticfiles/
 .photos-profile/
 *.json.key
 service-account*.json
+drive-token.json
+client_secret*.json

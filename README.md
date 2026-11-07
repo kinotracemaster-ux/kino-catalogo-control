@@ -39,16 +39,29 @@ Pruebas: `python manage.py test core`
 
 ## Conectar Google Drive (cuenta de ventas)
 
-1. En https://console.cloud.google.com crea un proyecto (p. ej. `kino-catalogo`).
-2. Activa **Google Drive API**.
-3. *IAM y administración → Cuentas de servicio → Crear*. Luego *Claves → Agregar clave → JSON*. Guarda el archivo; **no lo subas a GitHub**.
-4. Desde el **correo de ventas**, comparte la carpeta de fotos y la carpeta de inventario con el correo de la cuenta de servicio (`...@...iam.gserviceaccount.com`) como **Lector**.
-5. Copia los IDs de las carpetas (lo que va después de `/folders/` en la URL) a `DRIVE_PHOTOS_FOLDER_ID` y `DRIVE_INVENTORY_FOLDER_ID`, y el contenido del JSON a `GOOGLE_SERVICE_ACCOUNT_JSON`.
-6. Prueba:
+La organización bloquea las claves de cuentas de servicio, así que el sistema entra a Drive
+**con la propia cuenta de ventas, en modo solo lectura**:
+
+1. En https://console.cloud.google.com (proyecto `gold-virtue-498220-r0`) ve a
+   *APIs y servicios → Pantalla de consentimiento de OAuth*: tipo **Interno**, nombre `Kino Catálogo`.
+2. *APIs y servicios → Credenciales → Crear credenciales → ID de cliente de OAuth* →
+   tipo **App de escritorio** → descarga el JSON (`client_secret_....json`).
+3. En la computadora, con el proyecto instalado:
+   ```bash
+   python manage.py drive_login --client-secrets client_secret_XXXX.json
+   ```
+   Se abre el navegador: entra con la cuenta de ventas y acepta. Se crea `drive-token.json`.
+4. En el servidor, pon el contenido de `drive-token.json` en `GOOGLE_OAUTH_TOKEN_JSON`, y los IDs
+   de las carpetas (lo que va después de `/folders/` en la URL) en `DRIVE_PHOTOS_FOLDER_ID` y
+   `DRIVE_INVENTORY_FOLDER_ID`. **Ninguno de estos archivos se sube a GitHub.**
+5. Prueba:
    ```bash
    python manage.py sync_drive_images      # registra fotos y propone SKU por nombre de archivo
    python manage.py import_inventory --drive
    ```
+
+Alternativa: si un superadministrador quita la política `iam.disableServiceAccountKeyCreation`,
+también funciona una cuenta de servicio (`GOOGLE_SERVICE_ACCOUNT_JSON`) con las carpetas compartidas como Lector.
 
 ## Google Fotos
 

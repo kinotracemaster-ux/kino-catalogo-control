@@ -95,7 +95,10 @@ if not DEBUG:
 
 # --- Integraciones (cuenta de Google de VENTAS de Kino) ---
 KINO = {
-    # Cuenta de servicio de Google Cloud: ruta a JSON o el JSON completo en la variable.
+    # Opción 1 (recomendada): sesión de la cuenta de ventas, creada con `manage.py drive_login`.
+    "GOOGLE_OAUTH_TOKEN_JSON": os.environ.get("GOOGLE_OAUTH_TOKEN_JSON", ""),
+    "GOOGLE_OAUTH_TOKEN_FILE": os.environ.get("GOOGLE_OAUTH_TOKEN_FILE", ""),
+    # Opción 2: cuenta de servicio de Google Cloud: ruta a JSON o el JSON completo en la variable.
     "GOOGLE_SERVICE_ACCOUNT_FILE": os.environ.get("GOOGLE_SERVICE_ACCOUNT_FILE", ""),
     "GOOGLE_SERVICE_ACCOUNT_JSON": os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", ""),
     # Carpetas de Drive (IDs) compartidas con la cuenta de servicio.

@@ -1,8 +1,15 @@
 """Conector de Google Drive (solo lectura).
 
-Usa una cuenta de servicio de Google Cloud. Las carpetas de fotos e inventario,
-que viven en la cuenta de VENTAS de Kino, se comparten con el correo de la
-cuenta de servicio como «Lector». Nunca modifica ni borra archivos de Drive.
+Dos formas de autenticarse (se usa la primera que esté configurada):
+
+1. GOOGLE_OAUTH_TOKEN_JSON / GOOGLE_OAUTH_TOKEN_FILE (recomendada para Kino):
+   la cuenta de VENTAS inicia sesión una vez con `python manage.py drive_login`
+   y se guarda un permiso de solo lectura. No requiere claves de cuenta de
+   servicio (bloqueadas por la política de la organización).
+2. GOOGLE_SERVICE_ACCOUNT_JSON / GOOGLE_SERVICE_ACCOUNT_FILE: cuenta de servicio
+   con las carpetas compartidas como «Lector».
+
+Nunca modifica ni borra archivos de Drive.
 """
 import io
 import json
@@ -29,13 +36,20 @@ def get_service():
     from googleapiclient.discovery import build
 
     cfg = settings.KINO
-    if cfg["GOOGLE_SERVICE_ACCOUNT_JSON"]:
+    if cfg["GOOGLE_OAUTH_TOKEN_JSON"] or cfg["GOOGLE_OAUTH_TOKEN_FILE"]:
+        from google.oauth2.credentials import Credentials
+
+        if cfg["GOOGLE_OAUTH_TOKEN_JSON"]:
+            creds = Credentials.from_authorized_user_info(json.loads(cfg["GOOGLE_OAUTH_TOKEN_JSON"]), SCOPES)
+        else:
+            creds = Credentials.from_authorized_user_file(cfg["GOOGLE_OAUTH_TOKEN_FILE"], SCOPES)
+    elif cfg["GOOGLE_SERVICE_ACCOUNT_JSON"]:
         info = json.loads(cfg["GOOGLE_SERVICE_ACCOUNT_JSON"])
         creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
     elif cfg["GOOGLE_SERVICE_ACCOUNT_FILE"]:
         creds = service_account.Credentials.from_service_account_file(cfg["GOOGLE_SERVICE_ACCOUNT_FILE"], scopes=SCOPES)
     else:
-        raise DriveNotConfigured("Falta GOOGLE_SERVICE_ACCOUNT_JSON o GOOGLE_SERVICE_ACCOUNT_FILE")
+        raise DriveNotConfigured("Falta GOOGLE_OAUTH_TOKEN_JSON (ejecuta drive_login) o una cuenta de servicio")
     return build("drive", "v3", credentials=creds, cache_discovery=False)
 
 
